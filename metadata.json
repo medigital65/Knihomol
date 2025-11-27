@@ -1,0 +1,8 @@
+{
+  "name": "FilmKnihoMol AI",
+  "description": "Chytrá aplikace pro anotaci knih pomocí AI. Vyfoťte obálku, získejte detaily a chatujte s knihou.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

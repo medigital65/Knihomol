@@ -1,0 +1,235 @@
+
+import React, { useState } from 'react';
+import { MediaData } from '../types';
+import { TableCellsIcon, CheckIcon, PencilIcon, LinkIcon } from './Icons';
+
+interface ResultViewProps {
+  data: MediaData;
+  onSave: (data: MediaData) => void;
+  onChat: () => void;
+  onRetake: () => void;
+}
+
+const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake }) => {
+  const [editedData, setEditedData] = useState<MediaData>(data);
+  const [copied, setCopied] = useState(false);
+  
+  const [isEditingAnnotation, setIsEditingAnnotation] = useState(false);
+  const [isAnnotationExpanded, setIsAnnotationExpanded] = useState(false);
+
+  const handleChange = (field: keyof MediaData, value: string) => {
+    setEditedData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const copyToClipboard = () => {
+    // Sanitize data for TSV format to prevent breaking Sheet rows
+    // We replace tabs and newlines with spaces so it stays in one cell
+    const clean = (text: string) => text ? text.replace(/\t/g, ' ').replace(/\n/g, ' ').trim() : '';
+
+    // Format for Google Sheets (Tab separated)
+    // Added 'Zdroj' column
+    const header = "Typ\tNázev\tAutor/Režisér\tRok\tAnotace\tZdroj";
+    const row = `${clean(editedData.type)}\t${clean(editedData.title)}\t${clean(editedData.author)}\t${clean(editedData.publicationYear)}\t${clean(editedData.annotation)}\t${clean(editedData.sourceUrl)}`;
+    const textToCopy = `${header}\n${row}`;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+      onSave(editedData); // Trigger save callback conceptually
+    });
+  };
+
+  // Truncation logic
+  const MAX_LENGTH = 200;
+  const shouldTruncate = editedData.annotation.length > MAX_LENGTH;
+  const displayedAnnotation = !isAnnotationExpanded && shouldTruncate
+    ? `${editedData.annotation.slice(0, MAX_LENGTH)}...`
+    : editedData.annotation;
+
+  const isFilm = editedData.type === 'Film';
+
+  return (
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl mx-auto border border-gray-100">
+      <div className="p-6 md:p-8 space-y-6">
+        <div className="flex justify-between items-start">
+            <h2 className="text-2xl font-bold text-gray-800 serif">Detaily záznamu</h2>
+            <button onClick={onRetake} className="text-sm text-gray-500 hover:text-gray-700 underline">
+                Zrušit
+            </button>
+        </div>
+
+        <div className="grid gap-4">
+          <div>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Typ</label>
+             <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="mediaType" 
+                        checked={editedData.type === 'Kniha'} 
+                        onChange={() => handleChange('type', 'Kniha')}
+                        className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>Kniha</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="mediaType" 
+                        checked={editedData.type === 'Film'} 
+                        onChange={() => handleChange('type', 'Film')}
+                        className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>Film</span>
+                </label>
+             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Název</label>
+            <input 
+              type="text" 
+              value={editedData.title} 
+              onChange={(e) => handleChange('title', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {isFilm ? 'Režisér' : 'Autor'}
+              </label>
+              <input 
+                type="text" 
+                value={editedData.author} 
+                onChange={(e) => handleChange('author', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rok vydání</label>
+              <input 
+                type="text" 
+                value={editedData.publicationYear} 
+                onChange={(e) => handleChange('publicationYear', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Zdroj (URL)</label>
+             <div className="flex gap-2">
+                 <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <LinkIcon className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input 
+                        type="text" 
+                        value={editedData.sourceUrl || ''} 
+                        onChange={(e) => handleChange('sourceUrl', e.target.value)}
+                        placeholder={isFilm ? "https://www.csfd.cz/..." : "https://www.databazeknih.cz/..."}
+                        className="w-full pl-9 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                 </div>
+                 {editedData.sourceUrl && (
+                    <a 
+                        href={editedData.sourceUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-300 flex items-center transition-colors"
+                        title="Otevřít odkaz"
+                    >
+                        <span className="text-xs font-semibold">Otevřít</span>
+                    </a>
+                 )}
+             </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-gray-700">Anotace</label>
+                {!isEditingAnnotation && (
+                    <button
+                        onClick={() => setIsEditingAnnotation(true)}
+                        className="text-indigo-600 hover:text-indigo-800 text-xs font-medium flex items-center gap-1 transition-colors"
+                        title="Upravit anotaci"
+                    >
+                        <PencilIcon className="w-3.5 h-3.5" />
+                        Upravit
+                    </button>
+                )}
+            </div>
+            
+            {isEditingAnnotation ? (
+                 <div className="relative">
+                     <textarea 
+                      value={editedData.annotation} 
+                      onChange={(e) => handleChange('annotation', e.target.value)}
+                      rows={8}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm leading-relaxed shadow-sm"
+                      autoFocus
+                    />
+                     <button 
+                        onClick={() => setIsEditingAnnotation(false)}
+                        className="absolute bottom-3 right-3 bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 rounded-md hover:bg-indigo-700 transition shadow-sm"
+                    >
+                        Hotovo
+                    </button>
+                </div>
+            ) : (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 transition-all hover:border-gray-300">
+                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        {displayedAnnotation}
+                    </p>
+                    {shouldTruncate && (
+                         <button 
+                            onClick={() => setIsAnnotationExpanded(!isAnnotationExpanded)}
+                            className="mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-medium focus:outline-none hover:underline"
+                        >
+                            {isAnnotationExpanded ? 'Zobrazit méně' : 'Číst dál...'}
+                        </button>
+                    )}
+                </div>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-4 flex flex-col sm:flex-row gap-3 border-t border-gray-100">
+          <button 
+            onClick={copyToClipboard}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              copied 
+                ? 'bg-green-100 text-green-700 border border-green-200' 
+                : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+            }`}
+          >
+            {copied ? (
+              <>
+                <CheckIcon className="w-5 h-5" />
+                Zkopírováno
+              </>
+            ) : (
+              <>
+                <TableCellsIcon className="w-5 h-5" />
+                Kopírovat do Google Sheets
+              </>
+            )}
+          </button>
+          
+          <button 
+            onClick={onChat}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <span className="text-xl">✨</span>
+            Chat o {isFilm ? 'filmu' : 'knize'}
+          </button>
+        </div>
+        {copied && <p className="text-xs text-center text-green-600 mt-0">Data zkopírována do schránky (včetně sloupce Zdroj).</p>}
+      </div>
+    </div>
+  );
+};
+
+export default ResultView;

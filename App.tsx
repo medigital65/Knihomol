@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { AppState, MediaData } from './types';
 import CameraCapture from './components/CameraCapture';
 import ResultView from './components/ResultView';
 import ChatInterface from './components/ChatInterface';
 import { analyzeMediaCover } from './services/geminiService';
-import { SparklesIcon } from './components/Icons';
+import { SparklesIcon, CameraIcon, PhotoIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(AppState.HOME);
@@ -26,6 +27,19 @@ const App: React.FC = () => {
       setState(AppState.HOME);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          handleCapture(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -69,19 +83,33 @@ const App: React.FC = () => {
 
              <div className="text-center space-y-2">
                 <h2 className="text-3xl font-bold text-gray-800 serif">Anotátor Knih a Filmů</h2>
-                <p className="text-gray-500">Vyfoťte obálku knihy nebo plakát filmu. AI rozpozná typ, detaily a vytvoří anotaci.</p>
+                <p className="text-gray-500">Vyfoťte obálku nebo nahrajte obrázek. AI rozpozná typ, detaily a vytvoří anotaci.</p>
              </div>
              
-             <div className="w-full aspect-[3/4] max-h-[500px] bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative group cursor-pointer transition-transform hover:scale-[1.01]" onClick={() => setState(AppState.CAMERA)}>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-indigo-600 bg-indigo-50/50 group-hover:bg-indigo-50/80 transition">
-                   <div className="p-4 bg-white rounded-full shadow-lg mb-4">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                     </svg>
-                   </div>
-                   <span className="font-semibold text-lg">Spustit kameru</span>
-                </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                <button 
+                  onClick={() => setState(AppState.CAMERA)} 
+                  className="bg-white p-6 rounded-2xl shadow-md border border-indigo-50 hover:border-indigo-200 hover:shadow-xl transition-all group flex flex-col items-center justify-center text-center gap-4 h-48 md:h-64"
+                >
+                    <div className="p-4 bg-indigo-50 text-indigo-600 rounded-full group-hover:scale-110 transition-transform">
+                        <CameraIcon className="w-10 h-10" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-800">Vyfotit</h3>
+                        <p className="text-sm text-gray-500">Použít kameru</p>
+                    </div>
+                </button>
+
+                <label className="bg-white p-6 rounded-2xl shadow-md border border-indigo-50 hover:border-indigo-200 hover:shadow-xl transition-all group flex flex-col items-center justify-center text-center gap-4 h-48 md:h-64 cursor-pointer">
+                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    <div className="p-4 bg-purple-50 text-purple-600 rounded-full group-hover:scale-110 transition-transform">
+                        <PhotoIcon className="w-10 h-10" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-800">Nahrát</h3>
+                        <p className="text-sm text-gray-500">Z galerie</p>
+                    </div>
+                </label>
              </div>
           </div>
         )}

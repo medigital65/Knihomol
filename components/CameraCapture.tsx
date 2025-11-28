@@ -1,5 +1,6 @@
+
 import React, { useRef, useEffect, useState } from 'react';
-import { CameraIcon } from './Icons';
+import { CameraIcon, PhotoIcon } from './Icons';
 
 interface CameraCaptureProps {
   onCapture: (imageData: string) => void;
@@ -71,7 +72,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
       {error ? (
         <div className="text-white p-4 text-center">
           <p>{error}</p>
-          <label className="mt-4 inline-block px-6 py-3 bg-indigo-600 rounded-full cursor-pointer hover:bg-indigo-700 transition">
+          <label className="mt-4 inline-block px-6 py-3 bg-indigo-600 rounded-full cursor-pointer hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+            <PhotoIcon className="w-5 h-5" />
             Nahrát fotku
             <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
           </label>
@@ -89,9 +91,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
           <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-6">
              <label className="p-3 bg-white/20 backdrop-blur-sm rounded-full cursor-pointer hover:bg-white/30 transition text-white">
                 <span className="sr-only">Upload</span>
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                 </svg>
+                 <PhotoIcon className="w-6 h-6" />
                 <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
              </label>
 

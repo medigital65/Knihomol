@@ -96,7 +96,7 @@ export const createChatSession = (mediaContext: MediaData) => {
   Zdroj: ${mediaContext.sourceUrl}
   Anotace: ${mediaContext.annotation}
 
-  Odpovídej stručně, věcně a vždy v českém jazyce. Pokud se uživatel zeptá na něco mimo kontext díla, zdvořile se vrať k tématu.`;
+  Odpovídej stručně, věcně a vždy v českém jazyce. Umožni uživateli zeptat se i na něco v souvislosti s dílem např. detaily ohledně autora/režiséra, postav, herců, dalších děl autora. Věci úplně mimo kontext díla zdvořile odmítni.`;
 
   return ai.chats.create({
     model: "gemini-2.5-flash",

@@ -27,10 +27,9 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
     const clean = (text: string) => text ? text.replace(/\t/g, ' ').replace(/\n/g, ' ').trim() : '';
 
     // Format for Google Sheets (Tab separated)
-    // Added 'Zdroj' column
-    const header = "Typ\tNázev\tAutor/Režisér\tRok\tAnotace\tZdroj";
+    // Only copy the data row, not the header
     const row = `${clean(editedData.type)}\t${clean(editedData.title)}\t${clean(editedData.author)}\t${clean(editedData.publicationYear)}\t${clean(editedData.annotation)}\t${clean(editedData.sourceUrl)}`;
-    const textToCopy = `${header}\n${row}`;
+    const textToCopy = row;
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       setCopied(true);
@@ -213,7 +212,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
             ) : (
               <>
                 <TableCellsIcon className="w-5 h-5" />
-                Kopírovat do Google Sheets
+                Kopírovat
               </>
             )}
           </button>

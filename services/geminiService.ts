@@ -11,6 +11,7 @@ const getClient = () => {
 };
 
 // Define the schema for structured output
+// Removed sourceUrl from schema to prevent hallucinated IDs. We will generate search URLs programmatically.
 const mediaSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -22,10 +23,9 @@ const mediaSchema: Schema = {
     title: { type: Type.STRING, description: "The full title of the work." },
     author: { type: Type.STRING, description: "The name of the author (if book) or director (if movie)." },
     publicationYear: { type: Type.STRING, description: "The year of first publication or release." },
-    annotation: { type: Type.STRING, description: "A summary/annotation of the work in exactly 5 sentences. Must be in Czech language." },
-    sourceUrl: { type: Type.STRING, description: "A likely URL to the detail page on Databazeknih.cz (for books) or CSFD.cz (for movies)." }
+    annotation: { type: Type.STRING, description: "A summary/annotation of the work in exactly 5 sentences. Must be in Czech language." }
   },
-  required: ["type", "title", "author", "publicationYear", "annotation", "sourceUrl"],
+  required: ["type", "title", "author", "publicationYear", "annotation"],
 };
 
 export const analyzeMediaCover = async (base64Image: string): Promise<MediaData> => {
@@ -46,7 +46,7 @@ export const analyzeMediaCover = async (base64Image: string): Promise<MediaData>
             },
           },
           {
-            text: "Analyzuj tento obrázek (obal knihy nebo plakát filmu). Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání. Napiš krátkou anotaci (přesně 5 vět) v českém jazyce. Najdi a vlož URL odkaz na detail díla na serveru Databazeknih.cz (pokud je to kniha) nebo CSFD.cz (pokud je to film).",
+            text: "Analyzuj tento obrázek (obal knihy nebo plakát filmu). Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání. Napiš krátkou anotaci (přesně 5 vět) v českém jazyce.",
           },
         ],
       },
@@ -63,7 +63,21 @@ export const analyzeMediaCover = async (base64Image: string): Promise<MediaData>
     // Clean potential markdown code blocks (```json ... ```) which can break JSON.parse
     const cleanText = text.replace(/```json\n?|```/g, '').trim();
 
-    return JSON.parse(cleanText) as MediaData;
+    const parsedData = JSON.parse(cleanText);
+
+    // Programmatically generate search URLs instead of relying on AI hallucination
+    let sourceUrl = "";
+    if (parsedData.type === 'Film') {
+      // Search CSFD by title
+      sourceUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(parsedData.title)}`;
+    } else {
+      // Search Databazeknih by Title + Author for better accuracy
+      // Updated URL format as requested
+      sourceUrl = `https://www.databazeknih.cz/vyhledavani/knihy?q=${encodeURIComponent(parsedData.title + " " + parsedData.author)}`;
+    }
+
+    return { ...parsedData, sourceUrl } as MediaData;
+
   } catch (error) {
     console.error("Error analyzing media:", error);
     throw error;

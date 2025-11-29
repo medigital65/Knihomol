@@ -195,36 +195,49 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
           </div>
         </div>
 
-        <div className="pt-4 flex flex-col sm:flex-row gap-3 border-t border-gray-100">
-          <button 
-            onClick={copyToClipboard}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-              copied 
-                ? 'bg-green-100 text-green-700 border border-green-200' 
-                : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
-            }`}
-          >
-            {copied ? (
-              <>
-                <CheckIcon className="w-5 h-5" />
-                Zkopírováno
-              </>
-            ) : (
-              <>
-                <TableCellsIcon className="w-5 h-5" />
-                Kopírovat
-              </>
-            )}
-          </button>
-          
-          <button 
-            onClick={onChat}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
-          >
-            <span className="text-xl">✨</span>
-            Chat o {isFilm ? 'filmu' : 'knize'}
-          </button>
+        <div className="pt-4 border-t border-gray-100 space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={copyToClipboard}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+                  copied 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <CheckIcon className="w-5 h-5" />
+                    Zkopírováno
+                  </>
+                ) : (
+                  <>
+                    <TableCellsIcon className="w-5 h-5" />
+                    Kopírovat
+                  </>
+                )}
+              </button>
+
+              <a 
+                href="https://www.appsheet.com/start/33b34290-cc77-4a7b-9c7e-9cb483dc3f3d#view=Knihomol_AI_Form"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-all shadow-sm border border-blue-100"
+              >
+                 <LinkIcon className="w-5 h-5" />
+                 Uložit
+              </a>
+              
+              <button 
+                onClick={onChat}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+              >
+                <span className="text-xl">✨</span>
+                Chat o {isFilm ? 'filmu' : 'knize'}
+              </button>
+            </div>
         </div>
+        
         {copied && <p className="text-xs text-center text-green-600 mt-0">Data zkopírována do schránky (včetně sloupce Zdroj).</p>}
       </div>
     </div>

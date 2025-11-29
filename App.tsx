@@ -53,6 +53,8 @@ const App: React.FC = () => {
     setErrorMessage(null);
   };
 
+  const isPostAnalysis = (state === AppState.DETAILS || state === AppState.CHAT) && mediaData;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
       <header className="bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-20 shadow-sm">
@@ -134,17 +136,25 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {state === AppState.DETAILS && mediaData && (
-          <ResultView 
-            data={mediaData} 
-            onSave={handleSave} 
-            onChat={() => setState(AppState.DETAILS + 1)} 
-            onRetake={reset}
-          />
-        )}
-        
-        {state > AppState.DETAILS && mediaData && (
-            <ChatInterface mediaData={mediaData} onBack={() => setState(AppState.DETAILS)} />
+        {/* Keep both views mounted but toggle visibility to preserve state */}
+        {isPostAnalysis && (
+          <>
+            <div className={`${state === AppState.DETAILS ? 'block' : 'hidden'} w-full`}>
+                <ResultView 
+                  data={mediaData} 
+                  onSave={handleSave} 
+                  onChat={() => setState(AppState.CHAT)} 
+                  onRetake={reset}
+                />
+            </div>
+            
+            <div className={`${state === AppState.CHAT ? 'block' : 'hidden'} w-full`}>
+                <ChatInterface 
+                    mediaData={mediaData} 
+                    onBack={() => setState(AppState.DETAILS)} 
+                />
+            </div>
+          </>
         )}
 
       </main>

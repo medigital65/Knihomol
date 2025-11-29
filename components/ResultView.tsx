@@ -38,6 +38,11 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
     });
   };
 
+  const handleChatClick = () => {
+    onSave(editedData); // Save current edits to App state before switching
+    onChat();
+  };
+
   // Truncation logic
   const MAX_LENGTH = 200;
   const shouldTruncate = editedData.annotation.length > MAX_LENGTH;
@@ -229,7 +234,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
               </a>
               
               <button 
-                onClick={onChat}
+                onClick={handleChatClick}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
               >
                 <span className="text-xl">✨</span>

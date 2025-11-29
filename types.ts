@@ -19,4 +19,5 @@ export enum AppState {
   CAMERA,
   ANALYZING,
   DETAILS,
+  CHAT,
 }

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { MediaData } from '../types';
-import { TableCellsIcon, CheckIcon, PencilIcon, LinkIcon } from './Icons';
+import { PencilIcon, LinkIcon } from './Icons';
 
 interface ResultViewProps {
   data: MediaData;
@@ -221,27 +221,6 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
 
         <div className="pt-4 border-t border-gray-100 space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={copyToClipboard}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                  copied 
-                    ? 'bg-green-100 text-green-700 border border-green-200' 
-                    : 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="w-5 h-5" />
-                    Zkopírováno
-                  </>
-                ) : (
-                  <>
-                    <TableCellsIcon className="w-5 h-5" />
-                    Kopírovat
-                  </>
-                )}
-              </button>
-
               <a 
                 href={getAppSheetUrl()}
                 target="_blank"
@@ -270,4 +249,3 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
 };
 
 export default ResultView;
-    

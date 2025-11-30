@@ -4,14 +4,16 @@ import { AppState, MediaData } from './types';
 import CameraCapture from './components/CameraCapture';
 import ResultView from './components/ResultView';
 import ChatInterface from './components/ChatInterface';
+import HelpModal from './components/HelpModal';
 import { analyzeMediaCover } from './services/geminiService';
-import { SparklesIcon, CameraIcon, PhotoIcon } from './components/Icons';
+import { SparklesIcon, CameraIcon, PhotoIcon, QuestionMarkCircleIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(AppState.HOME);
   const [mediaData, setMediaData] = useState<MediaData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleCapture = async (imageData: string) => {
     setState(AppState.ANALYZING);
@@ -61,17 +63,28 @@ const App: React.FC = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 text-indigo-700">
             <span className="text-2xl">📚🎬</span>
-            <h1 className="text-xl font-bold tracking-tight serif">Knihomol & Filmomol AI</h1>
+            <h1 className="text-xl font-bold tracking-tight serif hidden sm:block">Knihomol & Filmomol AI</h1>
+            <h1 className="text-xl font-bold tracking-tight serif sm:hidden">Knihomol AI</h1>
           </div>
-          {state !== AppState.HOME && (
-             <button onClick={reset} className="text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
-                Začít znovu
+          
+          <div className="flex items-center gap-4">
+             {state !== AppState.HOME && (
+                <button onClick={reset} className="text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
+                   Začít znovu
+                </button>
+             )}
+             <button 
+                onClick={() => setShowHelp(true)} 
+                className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors"
+             >
+                <QuestionMarkCircleIcon className="w-5 h-5" />
+                <span className="hidden sm:inline">O aplikaci</span>
              </button>
-          )}
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4 md:p-6 w-full max-w-4xl mx-auto">
+      <main className="flex-1 flex flex-col items-center p-4 md:p-6 w-full max-w-4xl mx-auto relative">
         
         {state === AppState.HOME && (
           <div className="flex flex-col items-center justify-center flex-1 w-full max-w-md space-y-8 animate-fade-in-up">
@@ -156,6 +169,9 @@ const App: React.FC = () => {
             </div>
           </>
         )}
+
+        {/* Help Modal */}
+        {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
       </main>
 

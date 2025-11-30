@@ -38,6 +38,25 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
     });
   };
 
+  const getAppSheetUrl = () => {
+    const baseUrl = "https://www.appsheet.com/start/33b34290-cc77-4a7b-9c7e-9cb483dc3f3d";
+    
+    // Map fields to Czech keys expected by the AppSheet form defaults
+    const defaults = {
+      "Typ": editedData.type,
+      "Název": editedData.title,
+      "Autor": editedData.author,
+      "Rok": editedData.publicationYear,
+      "Anotace": editedData.annotation,
+      "Zdroj": editedData.sourceUrl || ""
+    };
+
+    const jsonDefaults = JSON.stringify(defaults);
+    const encodedDefaults = encodeURIComponent(jsonDefaults);
+
+    return `${baseUrl}#view=Knihomol_AI_Form&defaults=${encodedDefaults}`;
+  };
+
   const handleChatClick = () => {
     onSave(editedData); // Save current edits to App state before switching
     onChat();
@@ -224,9 +243,10 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
               </button>
 
               <a 
-                href="https://www.appsheet.com/start/33b34290-cc77-4a7b-9c7e-9cb483dc3f3d#view=Knihomol_AI_Form"
+                href={getAppSheetUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={copyToClipboard}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-all shadow-sm border border-blue-100"
               >
                  <LinkIcon className="w-5 h-5" />
@@ -250,3 +270,4 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
 };
 
 export default ResultView;
+    

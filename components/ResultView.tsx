@@ -48,7 +48,8 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
       "Autor": editedData.author,
       "Rok": editedData.publicationYear,
       "Anotace": editedData.annotation,
-      "Zdroj": editedData.sourceUrl || ""
+      "Zdroj": editedData.sourceUrl || "",
+      "PIN": "0000"
     };
 
     const jsonDefaults = JSON.stringify(defaults);

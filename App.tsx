@@ -8,6 +8,7 @@ import HelpModal from './components/HelpModal';
 import SettingsModal from './components/SettingsModal';
 import { analyzeMediaCover, DEFAULT_ANALYSIS_PROMPT, DEFAULT_CHAT_SYSTEM_INSTRUCTION } from './services/geminiService';
 import { SparklesIcon, CameraIcon, PhotoIcon, QuestionMarkCircleIcon, Cog6ToothIcon } from './components/Icons';
+import { AppLogo } from './components/AppLogo';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(AppState.HOME);
@@ -76,10 +77,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-      <header className="bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-20 shadow-sm">
+      <header className="bg-white border-b border-gray-200 py-3 px-6 sticky top-0 z-20 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-700">
-            <span className="text-2xl">📚🎬</span>
+          <div className="flex items-center gap-3 text-indigo-700">
+            <AppLogo className="w-10 h-10 drop-shadow-sm" />
             <h1 className="text-xl font-bold tracking-tight serif hidden sm:block">Knihomol & Filmomol AI</h1>
             <h1 className="text-xl font-bold tracking-tight serif sm:hidden">Knihomol AI</h1>
           </div>
@@ -122,9 +123,12 @@ const App: React.FC = () => {
                </div>
              )}
 
-             <div className="text-center space-y-2">
+             <div className="text-center space-y-4">
+                <div className="flex justify-center mb-2">
+                    <AppLogo className="w-32 h-32 drop-shadow-xl" />
+                </div>
                 <h2 className="text-3xl font-bold text-gray-800 serif">Anotátor Knih a Filmů</h2>
-                <p className="text-gray-500">Vyfoťte obálku nebo nahrajte obrázek. AI rozpozná typ, detaily a vytvoří anotaci.</p>
+                <p className="text-gray-500 text-lg">Vyfoťte obálku nebo nahrajte obrázek. <br/>AI rozpozná typ, detaily a vytvoří anotaci.</p>
              </div>
              
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
@@ -164,8 +168,8 @@ const App: React.FC = () => {
         {state === AppState.ANALYZING && (
           <div className="flex flex-col items-center justify-center flex-1 space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center animate-pulse">
-                <SparklesIcon className="w-10 h-10 text-indigo-600" />
+              <div className="w-24 h-24 flex items-center justify-center animate-pulse">
+                <AppLogo className="w-20 h-20" />
               </div>
             </div>
             <div className="text-center">

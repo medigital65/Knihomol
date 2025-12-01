@@ -15,6 +15,7 @@ const getClient = () => {
 };
 
 // Define the schema for structured output
+// Note: We keep descriptions generic here so they don't override the user's custom prompt instructions (e.g. length of annotation).
 const mediaSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -26,7 +27,7 @@ const mediaSchema: Schema = {
     title: { type: Type.STRING, description: "The full title of the work." },
     author: { type: Type.STRING, description: "The name of the author (if book) or director (if movie)." },
     publicationYear: { type: Type.STRING, description: "The year of first publication or release." },
-    annotation: { type: Type.STRING, description: "A summary/annotation of the work in exactly 5 sentences. Must be in Czech language." }
+    annotation: { type: Type.STRING, description: "A summary/annotation of the work in Czech language. Follow the prompt instructions regarding length and style." }
   },
   required: ["type", "title", "author", "publicationYear", "annotation"],
 };

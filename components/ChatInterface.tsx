@@ -7,10 +7,11 @@ import { Chat, GenerateContentResponse } from "@google/genai";
 
 interface ChatInterfaceProps {
   mediaData: MediaData;
+  customSystemInstruction?: string;
   onBack: () => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ mediaData, onBack }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ mediaData, customSystemInstruction, onBack }) => {
   const typeLabel = mediaData.type === 'Film' ? 'filmu' : 'knize';
   
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -24,12 +25,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ mediaData, onBack }) => {
   const chatSessionRef = useRef<Chat | null>(null);
 
   useEffect(() => {
-    // Initialize chat session on mount
+    // Initialize chat session on mount or if mediaData changes (which essentially implies a new session context)
+    // Note: We don't recreate session just because customSystemInstruction changes mid-chat, only on init.
     if (!chatSessionRef.current) {
-        chatSessionRef.current = createChatSession(mediaData);
+        chatSessionRef.current = createChatSession(mediaData, customSystemInstruction);
     }
     scrollToBottom();
-  }, [mediaData]);
+  }, [mediaData]); // Removed customSystemInstruction dependency to avoid resetting chat mid-session if props update
 
   useEffect(() => {
     scrollToBottom();

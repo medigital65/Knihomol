@@ -21,3 +21,8 @@ export enum AppState {
   DETAILS,
   CHAT,
 }
+
+export interface AppSettings {
+  analysisPrompt: string;
+  chatSystemInstruction: string;
+}

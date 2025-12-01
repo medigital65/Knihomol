@@ -2,6 +2,10 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { MediaData } from "../types";
 
+export const DEFAULT_ANALYSIS_PROMPT = "Analyzuj tento obrázek (obal knihy nebo plakát filmu). Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání. Napiš krátkou anotaci (přesně 5 vět) v českém jazyce.";
+
+export const DEFAULT_CHAT_SYSTEM_INSTRUCTION = "Odpovídej stručně, věcně a vždy v českém jazyce. Umožni uživateli zeptat se i na něco v souvislosti s dílem např. detaily ohledně autora/režiséra, postav, herců, dalších děl autora. Věci úplně mimo kontext díla zdvořile odmítni.";
+
 const getClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
@@ -11,7 +15,6 @@ const getClient = () => {
 };
 
 // Define the schema for structured output
-// Removed sourceUrl from schema to prevent hallucinated IDs. We will generate search URLs programmatically.
 const mediaSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -28,7 +31,7 @@ const mediaSchema: Schema = {
   required: ["type", "title", "author", "publicationYear", "annotation"],
 };
 
-export const analyzeMediaCover = async (base64Image: string): Promise<MediaData> => {
+export const analyzeMediaCover = async (base64Image: string, customPrompt?: string): Promise<MediaData> => {
   const ai = getClient();
   
   // Clean base64 string if it contains metadata header
@@ -46,7 +49,7 @@ export const analyzeMediaCover = async (base64Image: string): Promise<MediaData>
             },
           },
           {
-            text: "Analyzuj tento obrázek (obal knihy nebo plakát filmu). Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání. Napiš krátkou anotaci (přesně 5 vět) v českém jazyce.",
+            text: customPrompt || DEFAULT_ANALYSIS_PROMPT,
           },
         ],
       },
@@ -72,7 +75,6 @@ export const analyzeMediaCover = async (base64Image: string): Promise<MediaData>
       sourceUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(parsedData.title)}`;
     } else {
       // Search Databazeknih by Title + Author for better accuracy
-      // Updated URL format as requested
       sourceUrl = `https://www.databazeknih.cz/vyhledavani/knihy?q=${encodeURIComponent(parsedData.title + " " + parsedData.author)}`;
     }
 
@@ -84,9 +86,10 @@ export const analyzeMediaCover = async (base64Image: string): Promise<MediaData>
   }
 };
 
-export const createChatSession = (mediaContext: MediaData) => {
+export const createChatSession = (mediaContext: MediaData, customInstruction?: string) => {
   const ai = getClient();
   const creatorLabel = mediaContext.type === 'Film' ? 'Režisér' : 'Autor';
+  const baseInstruction = customInstruction || DEFAULT_CHAT_SYSTEM_INSTRUCTION;
   
   const systemInstruction = `Jsi inteligentní asistent pro kulturu. Uživatel se ptá na dílo (${mediaContext.type}): "${mediaContext.title}".
   
@@ -96,7 +99,7 @@ export const createChatSession = (mediaContext: MediaData) => {
   Zdroj: ${mediaContext.sourceUrl}
   Anotace: ${mediaContext.annotation}
 
-  Odpovídej stručně, věcně a vždy v českém jazyce. Umožni uživateli zeptat se i na něco v souvislosti s dílem např. detaily ohledně autora/režiséra, postav, herců, dalších děl autora. Věci úplně mimo kontext díla zdvořile odmítni.`;
+  ${baseInstruction}`;
 
   return ai.chats.create({
     model: "gemini-2.5-flash",

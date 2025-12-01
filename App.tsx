@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
-import { AppState, MediaData } from './types';
+import React, { useState, useEffect } from 'react';
+import { AppState, MediaData, AppSettings } from './types';
 import CameraCapture from './components/CameraCapture';
 import ResultView from './components/ResultView';
 import ChatInterface from './components/ChatInterface';
 import HelpModal from './components/HelpModal';
-import { analyzeMediaCover } from './services/geminiService';
-import { SparklesIcon, CameraIcon, PhotoIcon, QuestionMarkCircleIcon } from './components/Icons';
+import SettingsModal from './components/SettingsModal';
+import { analyzeMediaCover, DEFAULT_ANALYSIS_PROMPT, DEFAULT_CHAT_SYSTEM_INSTRUCTION } from './services/geminiService';
+import { SparklesIcon, CameraIcon, PhotoIcon, QuestionMarkCircleIcon, Cog6ToothIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(AppState.HOME);
@@ -14,13 +15,29 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Settings State with Persistence
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => {
+    const saved = localStorage.getItem('appSettings');
+    return saved ? JSON.parse(saved) : {
+        analysisPrompt: DEFAULT_ANALYSIS_PROMPT,
+        chatSystemInstruction: DEFAULT_CHAT_SYSTEM_INSTRUCTION
+    };
+  });
+
+  const handleSaveSettings = (newSettings: AppSettings) => {
+    setAppSettings(newSettings);
+    localStorage.setItem('appSettings', JSON.stringify(newSettings));
+  };
 
   const handleCapture = async (imageData: string) => {
     setState(AppState.ANALYZING);
     setErrorMessage(null);
     setIsProcessing(true);
     try {
-      const result = await analyzeMediaCover(imageData);
+      // Pass the custom prompt from settings
+      const result = await analyzeMediaCover(imageData, appSettings.analysisPrompt);
       setMediaData(result);
       setState(AppState.DETAILS);
     } catch (error) {
@@ -67,12 +84,21 @@ const App: React.FC = () => {
             <h1 className="text-xl font-bold tracking-tight serif sm:hidden">Knihomol AI</h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
              {state !== AppState.HOME && (
-                <button onClick={reset} className="text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
+                <button onClick={reset} className="text-sm font-medium text-gray-500 hover:text-indigo-600 transition mr-2">
                    Začít znovu
                 </button>
              )}
+             
+             <button 
+                onClick={() => setShowSettings(true)}
+                className="text-gray-500 hover:text-indigo-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
+                title="Nastavení AI"
+             >
+                <Cog6ToothIcon className="w-5 h-5" />
+             </button>
+
              <button 
                 onClick={() => setShowHelp(true)} 
                 className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors"
@@ -164,14 +190,23 @@ const App: React.FC = () => {
             <div className={`${state === AppState.CHAT ? 'block' : 'hidden'} w-full`}>
                 <ChatInterface 
                     mediaData={mediaData} 
+                    customSystemInstruction={appSettings.chatSystemInstruction}
                     onBack={() => setState(AppState.DETAILS)} 
                 />
             </div>
           </>
         )}
 
-        {/* Help Modal */}
+        {/* Modals */}
         {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+        
+        {showSettings && (
+            <SettingsModal 
+                settings={appSettings} 
+                onSave={handleSaveSettings} 
+                onClose={() => setShowSettings(false)} 
+            />
+        )}
 
       </main>
 

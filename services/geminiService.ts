@@ -2,7 +2,10 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { MediaData } from "../types";
 
-export const DEFAULT_ANALYSIS_PROMPT = "Analyzuj tento obrázek (obal knihy nebo plakát filmu). Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání. Napiš krátkou anotaci (přesně 5 vět) v českém jazyce.";
+// Helper constant for the core logic that should not be changed by user settings
+const FIXED_CORE_PROMPT = "Rozpoznej, zda jde o knihu nebo film. Extrahuj název, autora (u knihy) nebo režiséra (u filmu) a rok vydání.";
+
+export const DEFAULT_ANALYSIS_PROMPT = "Napiš krátkou anotaci (přesně 5 vět) v českém jazyce.";
 
 export const DEFAULT_CHAT_SYSTEM_INSTRUCTION = "Odpovídej stručně, věcně a vždy v českém jazyce. Umožni uživateli zeptat se i na něco v souvislosti s dílem např. detaily ohledně autora/režiséra, postav, herců, dalších děl autora. Věci úplně mimo kontext díla zdvořile odmítni.";
 
@@ -32,11 +35,15 @@ const mediaSchema: Schema = {
   required: ["type", "title", "author", "publicationYear", "annotation"],
 };
 
-export const analyzeMediaCover = async (base64Image: string, customPrompt?: string): Promise<MediaData> => {
+export const analyzeMediaCover = async (base64Image: string, customPromptSuffix?: string): Promise<MediaData> => {
   const ai = getClient();
   
   // Clean base64 string if it contains metadata header
   const cleanBase64 = base64Image.split(',')[1] || base64Image;
+
+  // Combine the fixed core prompt with the user's custom suffix (annotation style)
+  // If no custom prompt is provided, use the default annotation instruction.
+  const finalPrompt = `Analyzuj tento obrázek. ${FIXED_CORE_PROMPT} ${customPromptSuffix || DEFAULT_ANALYSIS_PROMPT}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -50,7 +57,7 @@ export const analyzeMediaCover = async (base64Image: string, customPrompt?: stri
             },
           },
           {
-            text: customPrompt || DEFAULT_ANALYSIS_PROMPT,
+            text: finalPrompt,
           },
         ],
       },
@@ -79,7 +86,8 @@ export const analyzeMediaCover = async (base64Image: string, customPrompt?: stri
       sourceUrl = `https://www.databazeknih.cz/vyhledavani/knihy?q=${encodeURIComponent(parsedData.title + " " + parsedData.author)}`;
     }
 
-    return { ...parsedData, sourceUrl } as MediaData;
+    // Return structured data with default PIN
+    return { ...parsedData, sourceUrl, pin: "0000" } as MediaData;
 
   } catch (error) {
     console.error("Error analyzing media:", error);

@@ -6,6 +6,7 @@ export interface MediaData {
   publicationYear: string;
   annotation: string;
   sourceUrl: string;
+  pin: string;
 }
 
 export interface ChatMessage {

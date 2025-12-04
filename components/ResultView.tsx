@@ -11,7 +11,11 @@ interface ResultViewProps {
 }
 
 const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake }) => {
-  const [editedData, setEditedData] = useState<MediaData>(data);
+  // Ensure pin has a default value if not present in legacy data
+  const [editedData, setEditedData] = useState<MediaData>({
+    ...data,
+    pin: data.pin || "0000"
+  });
   const [copied, setCopied] = useState(false);
   
   const [isEditingAnnotation, setIsEditingAnnotation] = useState(false);
@@ -21,14 +25,23 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
     setEditedData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow only numbers and max 4 digits
+    if (/^\d{0,4}$/.test(val)) {
+        handleChange('pin', val);
+    }
+  };
+
   const copyToClipboard = () => {
     // Sanitize data for TSV format to prevent breaking Sheet rows
     // We replace tabs and newlines with spaces so it stays in one cell
     const clean = (text: string) => text ? text.replace(/\t/g, ' ').replace(/\n/g, ' ').trim() : '';
+    const pinVal = (editedData.pin && editedData.pin.length === 4) ? editedData.pin : "0000";
 
     // Format for Google Sheets (Tab separated)
     // Only copy the data row, not the header
-    const row = `${clean(editedData.type)}\t${clean(editedData.title)}\t${clean(editedData.author)}\t${clean(editedData.publicationYear)}\t${clean(editedData.annotation)}\t${clean(editedData.sourceUrl)}`;
+    const row = `${clean(editedData.type)}\t${clean(editedData.title)}\t${clean(editedData.author)}\t${clean(editedData.publicationYear)}\t${clean(editedData.annotation)}\t${clean(editedData.sourceUrl)}\t${pinVal}`;
     const textToCopy = row;
 
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -41,6 +54,9 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
   const getAppSheetUrl = () => {
     const baseUrl = "https://www.appsheet.com/start/33b34290-cc77-4a7b-9c7e-9cb483dc3f3d";
     
+    // Check if pin is exactly 4 digits, otherwise default to "0000"
+    const pinVal = (editedData.pin && editedData.pin.length === 4) ? editedData.pin : "0000";
+
     // Map fields to Czech keys expected by the AppSheet form defaults
     const defaults = {
       "Typ": editedData.type,
@@ -49,7 +65,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
       "Rok": editedData.publicationYear,
       "Anotace": editedData.annotation,
       "Zdroj": editedData.sourceUrl || "",
-      "PIN": "0000"
+      "PIN": pinVal
     };
 
     const jsonDefaults = JSON.stringify(defaults);
@@ -172,6 +188,19 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
           </div>
 
           <div>
+             <label className="block text-sm font-medium text-gray-700 mb-1">PIN (pro uložení)</label>
+             <input 
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={editedData.pin} 
+                onChange={handlePinChange}
+                placeholder="0000"
+                className="w-32 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest"
+            />
+          </div>
+
+          <div>
             <div className="flex justify-between items-center mb-1">
                 <label className="block text-sm font-medium text-gray-700">Anotace</label>
                 {!isEditingAnnotation && (
@@ -243,7 +272,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
             </div>
         </div>
         
-        {copied && <p className="text-xs text-center text-green-600 mt-0">Data zkopírována do schránky (včetně sloupce Zdroj).</p>}
+        {copied && <p className="text-xs text-center text-green-600 mt-0">Data zkopírována do schránky (včetně PINu).</p>}
       </div>
     </div>
   );

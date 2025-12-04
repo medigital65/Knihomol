@@ -27,9 +27,16 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow only numbers and max 4 digits
+    // Allow only numbers and max 4 digits during typing
     if (/^\d{0,4}$/.test(val)) {
         handleChange('pin', val);
+    }
+  };
+
+  const handlePinBlur = () => {
+    // Enforce exactly 4 digits on blur. If invalid, reset to default.
+    if (!editedData.pin || editedData.pin.length !== 4) {
+        handleChange('pin', "0000");
     }
   };
 
@@ -195,6 +202,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
                 maxLength={4}
                 value={editedData.pin} 
                 onChange={handlePinChange}
+                onBlur={handlePinBlur}
                 placeholder="0000"
                 className="w-32 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest"
             />

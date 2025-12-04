@@ -64,6 +64,15 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
               </li>
             </ol>
           </section>
+
+          <section>
+            <h3 className="text-lg font-bold text-indigo-700 mb-2">💡 Důležité info</h3>
+            <ul className="list-disc pl-5 space-y-1">
+               <li>
+                <strong>PIN:</strong> Pole PIN musí obsahovat přesně <strong>4 číslice</strong>. Pokud zadáte nesprávný formát, hodnota se automaticky vrátí na <code>0000</code>. Pro vysvětlení účelu a získání správného PINu kontaktujte autora aplikace.
+              </li>
+            </ul>
+          </section>
         </div>
       </div>
     </div>

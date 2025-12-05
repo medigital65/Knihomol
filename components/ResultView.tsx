@@ -195,20 +195,6 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
           </div>
 
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">PIN (pro uložení)</label>
-             <input 
-                type="text"
-                inputMode="numeric"
-                maxLength={4}
-                value={editedData.pin} 
-                onChange={handlePinChange}
-                onBlur={handlePinBlur}
-                placeholder="0000"
-                className="w-32 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest"
-            />
-          </div>
-
-          <div>
             <div className="flex justify-between items-center mb-1">
                 <label className="block text-sm font-medium text-gray-700">Anotace</label>
                 {!isEditingAnnotation && (
@@ -258,26 +244,39 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
         </div>
 
         <div className="pt-4 border-t border-gray-100 space-y-3">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a 
-                href={getAppSheetUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={copyToClipboard}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-all shadow-sm border border-blue-100"
-              >
-                 <LinkIcon className="w-5 h-5" />
-                 Uložit
-              </a>
-              
-              <button 
+            <div className="flex gap-3 items-end">
+                <div className="flex-none">
+                     <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">PIN</label>
+                     <input 
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={editedData.pin} 
+                        onChange={handlePinChange}
+                        onBlur={handlePinBlur}
+                        placeholder="0000"
+                        className="w-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest text-sm"
+                    />
+                </div>
+                <a 
+                    href={getAppSheetUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={copyToClipboard}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-all shadow-sm border border-blue-100"
+                >
+                    <LinkIcon className="w-5 h-5" />
+                    Uložit
+                </a>
+            </div>
+            
+            <button 
                 onClick={handleChatClick}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
-              >
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+            >
                 <span className="text-xl">✨</span>
                 Chat o {isFilm ? 'filmu' : 'knize'}
-              </button>
-            </div>
+            </button>
         </div>
         
         {copied && <p className="text-xs text-center text-green-600 mt-0">Data zkopírována do schránky (včetně PINu).</p>}

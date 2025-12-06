@@ -7,6 +7,7 @@ import ChatInterface from './components/ChatInterface';
 import HelpModal from './components/HelpModal';
 import SettingsModal from './components/SettingsModal';
 import { analyzeMediaCover, DEFAULT_ANALYSIS_PROMPT, DEFAULT_CHAT_SYSTEM_INSTRUCTION } from './services/geminiService';
+import { fetchAllowedPins } from './services/pinService';
 import { SparklesIcon, CameraIcon, PhotoIcon, QuestionMarkCircleIcon, Cog6ToothIcon } from './components/Icons';
 import { AppLogo } from './components/AppLogo';
 
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [allowedPins, setAllowedPins] = useState<string[]>([]);
 
   // Settings State with Persistence
   const [appSettings, setAppSettings] = useState<AppSettings>(() => {
@@ -26,6 +28,14 @@ const App: React.FC = () => {
         chatSystemInstruction: DEFAULT_CHAT_SYSTEM_INSTRUCTION
     };
   });
+
+  // Fetch allowed PINs on startup
+  useEffect(() => {
+    fetchAllowedPins().then(pins => {
+        console.log(`Loaded ${pins.length} allowed PINs`);
+        setAllowedPins(pins);
+    });
+  }, []);
 
   const handleSaveSettings = (newSettings: AppSettings) => {
     setAppSettings(newSettings);
@@ -188,6 +198,7 @@ const App: React.FC = () => {
                   onSave={handleSave} 
                   onChat={() => setState(AppState.CHAT)} 
                   onRetake={reset}
+                  allowedPins={allowedPins}
                 />
             </div>
             

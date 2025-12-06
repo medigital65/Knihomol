@@ -8,15 +8,18 @@ interface ResultViewProps {
   onSave: (data: MediaData) => void;
   onChat: () => void;
   onRetake: () => void;
+  allowedPins: string[];
 }
 
-const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake }) => {
+const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake, allowedPins }) => {
   // Ensure pin has a default value if not present in legacy data
   const [editedData, setEditedData] = useState<MediaData>({
     ...data,
     pin: data.pin || "0000"
   });
   const [copied, setCopied] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [showPinWarning, setShowPinWarning] = useState(false);
   
   const [isEditingAnnotation, setIsEditingAnnotation] = useState(false);
   const [isAnnotationExpanded, setIsAnnotationExpanded] = useState(false);
@@ -30,13 +33,27 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
     // Allow only numbers and max 4 digits during typing
     if (/^\d{0,4}$/.test(val)) {
         handleChange('pin', val);
+        setPinError(null);
     }
   };
 
   const handlePinBlur = () => {
-    // Enforce exactly 4 digits on blur. If invalid, reset to default.
-    if (!editedData.pin || editedData.pin.length !== 4) {
+    const pin = editedData.pin;
+    
+    // Check format (exactly 4 digits)
+    if (!pin || pin.length !== 4) {
+        // If empty or incomplete, reset to 0000 silently (or we could warn here too)
         handleChange('pin', "0000");
+        return;
+    }
+
+    // Check if PIN is in allowed list
+    // Skip check if PIN is already 0000 (default) or if list hasn't loaded
+    if (allowedPins.length > 0 && !allowedPins.includes(pin) && pin !== "0000") {
+        // Step 1: Set PIN to 0000
+        handleChange('pin', "0000");
+        // Step 2: Show confirmation dialog
+        setShowPinWarning(true);
     }
   };
 
@@ -96,7 +113,39 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
   const isFilm = editedData.type === 'Film';
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl mx-auto border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl mx-auto border border-gray-100 relative">
+      {/* PIN Confirmation Overlay */}
+      {showPinWarning && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full animate-fade-in-up">
+                <h3 className="text-lg font-bold text-red-600 mb-2">Neplatný PIN</h3>
+                <p className="text-gray-700 text-sm mb-4">
+                    Zadaný PIN není v seznamu povolených. Hodnota byla automaticky změněna na výchozí <strong>0000</strong>.
+                </p>
+                <p className="text-gray-600 text-sm mb-6">
+                    Přejete si záznam uložit s tímto výchozím PINem?
+                </p>
+                <div className="flex gap-3 justify-end">
+                    <button 
+                        onClick={() => {
+                            handleChange('pin', ''); // Clear to let them try again
+                            setShowPinWarning(false);
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
+                    >
+                        Upravit
+                    </button>
+                    <button 
+                        onClick={() => setShowPinWarning(false)} // Accept 0000
+                        className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm"
+                    >
+                        Ano, použít 0000
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
       <div className="p-6 md:p-8 space-y-6">
         <div className="flex justify-between items-start">
             <h2 className="text-2xl font-bold text-gray-800 serif">Detaily záznamu</h2>
@@ -245,7 +294,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
 
         <div className="pt-4 border-t border-gray-100 space-y-3">
             <div className="flex gap-3 items-end">
-                <div className="flex-none">
+                <div className="flex-none relative">
                      <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">PIN</label>
                      <input 
                         type="text"
@@ -255,8 +304,13 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake 
                         onChange={handlePinChange}
                         onBlur={handlePinBlur}
                         placeholder="0000"
-                        className="w-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest text-sm"
+                        className={`w-24 p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center tracking-widest text-sm ${pinError ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-300'}`}
                     />
+                    {pinError && (
+                        <div className="absolute -top-6 left-0 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded shadow-sm whitespace-nowrap">
+                            {pinError}
+                        </div>
+                    )}
                 </div>
                 <a 
                     href={getAppSheetUrl()}

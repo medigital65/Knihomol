@@ -10,18 +10,23 @@ export const fetchAllowedPins = async (): Promise<string[]> => {
     const text = await response.text();
     
     // Parse CSV:
-    // 1. Split by newline
-    // 2. Trim whitespace and remove quotes (CSV often quotes values)
-    // 3. Filter to keep only strings that are exactly 4 digits
+    // 1. Split by newline to get rows
+    // 2. Split by comma to get columns, take the first one
+    // 3. Trim whitespace and remove quotes
+    // 4. Filter to keep only strings that are exactly 4 digits
     const pins = text.split('\n')
-      .map(line => line.trim().replace(/^"|"$/g, ''))
+      .map(line => {
+          const firstCol = line.split(',')[0];
+          return firstCol ? firstCol.trim().replace(/^"|"$/g, '') : '';
+      })
       .filter(pin => /^\d{4}$/.test(pin));
 
     // Remove duplicates using Set
     return Array.from(new Set(pins));
   } catch (error) {
     console.error("Failed to fetch allowed PINs:", error);
-    // Return empty array on failure, which implies no PINs will be valid except default behavior
+    // Return empty array on failure. 
+    // ResultView will interpret this strictly (only 0000 allowed).
     return [];
   }
 };

@@ -29,12 +29,18 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake,
   };
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    // Allow only numbers and max 4 digits during typing
-    if (/^\d{0,4}$/.test(val)) {
-        handleChange('pin', val);
-        setPinError(null);
+    let val = e.target.value;
+    
+    // Remove any non-digit characters immediately
+    val = val.replace(/\D/g, '');
+    
+    // Enforce strict max length of 4 digits
+    if (val.length > 4) {
+        val = val.slice(0, 4);
     }
+
+    handleChange('pin', val);
+    setPinError(null);
   };
 
   const handlePinBlur = () => {
@@ -48,8 +54,10 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake,
     }
 
     // Check if PIN is in allowed list
-    // Skip check if PIN is already 0000 (default) or if list hasn't loaded
-    if (allowedPins.length > 0 && !allowedPins.includes(pin) && pin !== "0000") {
+    // STRICT CHECK: The PIN must be in the list OR be exactly "0000".
+    // We removed the check (allowedPins.length > 0), so if the list fails to load (is empty),
+    // ONLY "0000" will be accepted.
+    if (!allowedPins.includes(pin) && pin !== "0000") {
         // Step 1: Set PIN to 0000
         handleChange('pin', "0000");
         // Step 2: Show confirmation dialog
@@ -299,8 +307,7 @@ const ResultView: React.FC<ResultViewProps> = ({ data, onSave, onChat, onRetake,
                      <input 
                         type="text"
                         inputMode="numeric"
-                        maxLength={4}
-                        value={editedData.pin} 
+                        value={editedData.pin || ''} 
                         onChange={handlePinChange}
                         onBlur={handlePinBlur}
                         placeholder="0000"
